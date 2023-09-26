@@ -2,7 +2,7 @@
 
 # 
 
-# The Mojave OS Kernel
+# The Mojave Bike OS Kernel
 
 Developed by a team of students across multiple universities in the state of Georgia, the Mojave OS abuses the compute from the Quad-Core Cortex-A72 Processor and was designed for data acquisition and control.
 
