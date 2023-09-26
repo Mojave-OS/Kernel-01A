@@ -13,6 +13,9 @@ Our team is composed of the following people.
 Name | Job | Contact 
 -----|-----|-------------
 Diego Alba | Kernel Development Lead, Project Manager | [LinkedIn](https://www.linkedin.com/in/dalbasudo/), [Github](https://github.com/DAlba-sudo/), [Email](mailto:diego.alba@malarylib.com).
+Ryder Johnson | Member | [Github](https://github.com/UZ9)
+Michael Seng | Bike Design Lead, Hardware Integration | N/A
+Jared Inniss | Infrastructure / Operations Lead | [Email](Jaredinniss64@gmail.com)
 
 
 ## Want to help?
