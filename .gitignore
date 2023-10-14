@@ -2,3 +2,6 @@
 *.swo
 *.o
 *~
+*.elf
+*.img
+build/
