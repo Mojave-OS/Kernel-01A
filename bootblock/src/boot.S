@@ -1,48 +1,30 @@
-// the bootblock will load us over to our kernel's c-code
-.section ".text.boot"
-.globl _start
+.section ".text.boot"  // Make sure the linker puts this at the start of the kernel image
+
+.global _start  // Execution starts here
+
 _start:
-	b isolate_main_core
+    // Check processor ID is zero (executing on main core), else hang
+    mrs     x1, mpidr_el1
+    and     x1, x1, #3
+    cbz     x1, 2f
+    // We're not on the main core, so hang in an infinite wait loop
+1:  wfe
+    b       1b
+2:  // We're on the main core!
 
-boot_main:
-	// this is the main core, all others have been halted
-	// we want to set up the stack
-	ldr x5, =_start
-	mov sp, x5
+    // Set stack to start below our code
+    ldr     x1, =_start
+    mov     sp, x1
 
-	// we now have a stack that has been set-up so we can
-	// proceed with clearing the bss section
-	b clear_bss_section
-	
-	bss_return:
-	bl kernel_main
-		b distract_core
+    // Clean the BSS section
+    ldr     x1, =__bss_start     // Start address
+    ldr     w2, =__bss_size      // Size of the section
+3:  cbz     w2, 4f               // Quit loop if zero
+    str     xzr, [x1], #8
+    sub     w2, w2, #1
+    cbnz    w2, 3b               // Loop if non-zero
 
-// 
-// Sub-Methods for our Boot Section
-//
-isolate_main_core:
-	mrs x0, MPIDR_EL1
-	and x0, x0, 3
-	cmp x0, xzr
-	b.ne distract_core
-	b boot_main
-
-distract_core:
-	wfe
-	b distract_core
-
-clear_bss_section:
-	ldr x5, =__bss_start
-	ldr x6, =__bss_size
-
-	loop_bss_clear:
-		cbz w6, bss_return
-		
-		str wzr, [x5, x6]
-		sub w6, w2, #1
-
-
-
-
-
+    // Jump to our main() routine in C (make sure it doesn't return)
+4:  bl      kernel_main
+    // In case it does return, halt the master core too
+    b       1b

@@ -44,3 +44,6 @@ clean:
 	- rm mmojave.elf
 	- rm mmojave.img
 
+transfer:
+	cp ./mmojave.img /media/diego/bootfs/mmojave.img
+	md5sum ./mmojave.img /media/diego/bootfs/mmojave.img
