@@ -30,12 +30,19 @@ void init_gpio_map() {
     GPIO_PLS[3] = GPIO_ADDR(GPIO_REG_PL3);
 }
 
-static unsigned int *gpio_bank_sel(
+// selects the proper memory mapped register in a register bank (i.e.,
+// a contigious group of registers) based on the granularity of the 
+// data and the pin we are targeting.
+//
+// the % (57 * granularity / 32) may be unneccesarry but prevents a 
+// case where we choose a pin > the provided number of regs in the bank
+// causing a buffer overflow - in theory.
+static inline unsigned int *gpio_bank_sel(
     unsigned int pin,
     unsigned int granularity,
     unsigned int **banks
 ) {
-    return banks[((pin * granularity) / 32) % (32 / granularity)];
+    return banks[((pin * granularity) / 32) % (57 * granularity / 32)];
 }
 
 volatile pin_t gpio(unsigned int pin) {
@@ -55,4 +62,10 @@ void gpio_clear(unsigned int pin) {
 void gpio_func(unsigned int pin, unsigned int func) {
     unsigned int *regbase = gpio_bank_sel(pin, 3, GPIO_FSELS);
     mem_regw(3, regbase, func,(3 * (pin % 10)));
+}
+
+
+void gpio_pull(unsigned int pin, unsigned int pullv) {
+    unsigned int *regbase = gpio_bank_sel(pin, 2, GPIO_PLS);
+    mem_regw(2, regbase, pullv, (pin % 16));
 }

@@ -19,10 +19,15 @@ void kernel_main() {
     /* initialize the gpio map */
     init_gpio_map();
 
+    /* set the pins to not use any pull resistors */
+    for (unsigned int i = 0; i < PIN_COUNT; i++) {
+        gpio_pull(PINS[i], GPIO_PULLF);
+    }
+
     /* initialize gpio functions */
-    gpio_func(40, GPIO_FUNC_OUT);
-    gpio_func(38, GPIO_FUNC_OUT);
-    gpio_func(36, GPIO_FUNC_OUT);
+    for (unsigned int i = 0; i < PIN_COUNT; i++) {
+        gpio_func(PINS[i], GPIO_FUNC_OUT);
+    }
 
     /* set and clear pins with delay */
     while (1) {
