@@ -1,0 +1,7 @@
+*.swp
+*.swo
+*.o
+*~
+*.elf
+*.img
+build/
