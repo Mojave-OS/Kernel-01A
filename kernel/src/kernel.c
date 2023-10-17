@@ -10,12 +10,33 @@ void delay(int seconds) {
 }
 
 void kernel_main() {
-    gpio_func(40, GPIO_FUNC_OUT);
+    unsigned int PIN_COUNT = 3;
+    unsigned int PINS[PIN_COUNT];
+    PINS[0] = 40;
+    PINS[1] = 38;
+    PINS[2] = 36;
     
-    while (1) {
-        gpio_set(40);
-        gpio_clear(40);
+    /* initialize the gpio map */
+    init_gpio_map();
 
-        delay(1);
+    /* initialize gpio functions */
+    gpio_func(40, GPIO_FUNC_OUT);
+    gpio_func(38, GPIO_FUNC_OUT);
+    gpio_func(36, GPIO_FUNC_OUT);
+
+    /* set and clear pins with delay */
+    while (1) {
+        /* set the pins */
+        for (unsigned int i = 0; i < PIN_COUNT; i++) {
+            gpio_set(PINS[i]);
+        }
+
+        delay(2);
+        
+        
+        /* set the pins */
+        for (unsigned int i = 0; i < PIN_COUNT; i++) {
+            gpio_clear(PINS[i]);
+        }
     }
 }

@@ -22,4 +22,19 @@
 #define GPIO_REG_PL2                    0xec
 #define GPIO_REG_PL3                    0xf0
 
+// function for manipulation of mem registers
+/* TODO: Fix Implementation Issue 
+    As of right now, this only deals with WO registers and will
+    clear registers that are designed to allow for RW access (i.e., 
+    registers like FSELn, etc).
+
+    The issue is trivial and shouldn't affect our signs of life tests.
+*/
+void mem_regw(
+    unsigned int granularity,
+    unsigned int *address,
+    unsigned int value,
+    unsigned int index
+);
+
 #endif

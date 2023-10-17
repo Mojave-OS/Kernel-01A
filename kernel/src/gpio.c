@@ -1,77 +1,58 @@
 #include "memlayout.h"
 #include "gpio.h"
 
-static inline unsigned int gpio_bank_sel(unsigned int pin, unsigned int max) {
-    return (unsigned int) (pin / max);
+unsigned int *GPIO_SETS[2];
+unsigned int *GPIO_CLEARS[2];
+unsigned int *GPIO_LEVS[2];
+unsigned int *GPIO_FSELS[6];
+unsigned int *GPIO_PLS[4];
+
+void init_gpio_map() {
+    GPIO_SETS[0] = GPIO_ADDR(GPIO_REG_SET0);
+    GPIO_SETS[1] = GPIO_ADDR(GPIO_REG_SET1);
+
+    GPIO_CLEARS[0] = GPIO_ADDR(GPIO_REG_CLR0);
+    GPIO_CLEARS[1] = GPIO_ADDR(GPIO_REG_CLR1);
+    
+    GPIO_LEVS[0] = GPIO_ADDR(GPIO_REG_LEV0);
+    GPIO_LEVS[1] = GPIO_ADDR(GPIO_REG_LEV1);
+
+    GPIO_FSELS[0] = GPIO_ADDR(GPIO_REG_FSEL0);
+    GPIO_FSELS[1] = GPIO_ADDR(GPIO_REG_FSEL1);
+    GPIO_FSELS[2] = GPIO_ADDR(GPIO_REG_FSEL2);
+    GPIO_FSELS[3] = GPIO_ADDR(GPIO_REG_FSEL3);
+    GPIO_FSELS[4] = GPIO_ADDR(GPIO_REG_FSEL4);
+    GPIO_FSELS[5] = GPIO_ADDR(GPIO_REG_FSEL5);
+
+    GPIO_PLS[0] = GPIO_ADDR(GPIO_REG_PL0);
+    GPIO_PLS[1] = GPIO_ADDR(GPIO_REG_PL1);
+    GPIO_PLS[2] = GPIO_ADDR(GPIO_REG_PL2);
+    GPIO_PLS[3] = GPIO_ADDR(GPIO_REG_PL3);
+}
+
+static unsigned int *gpio_bank_sel(
+    unsigned int pin,
+    unsigned int granularity,
+    unsigned int **banks
+) {
+    return banks[((pin * granularity) / 32) % (32 / granularity)];
 }
 
 volatile pin_t gpio(unsigned int pin) {
-    unsigned int *regbase = GPIO_ADDR(GPIO_REG_LEV0);
-    unsigned int levelreg = gpio_bank_sel(pin, 32);
-    
-    // selects the register base depending on the pin
-    switch (levelreg) {
-    case 1:
-        regbase = GPIO_ADDR(GPIO_REG_LEV1);
-        break;
-    
-    default:
-        break;
-    }
-
-    return *regbase;
+    return *gpio_bank_sel(pin, 1, GPIO_LEVS);
 }
 
 void gpio_set(unsigned int pin) {
-    unsigned int shiftam = (pin) % 32;
-    unsigned int *regbase = GPIO_ADDR(GPIO_REG_SET0);
-    switch (gpio_bank_sel(pin, 32)) {
-        case 1:
-            regbase = GPIO_ADDR(GPIO_REG_SET1);
-            break;
-        default:
-            break;
-    }
-
-    *regbase = (1 << shiftam);
+    unsigned int *regbase = gpio_bank_sel(pin, 1, GPIO_SETS);
+    mem_regw(1, regbase, 1, (pin % 32));
 }
 
 void gpio_clear(unsigned int pin) {
-    unsigned int shiftam = (pin) % 32;
-    unsigned int *regbase = GPIO_ADDR(GPIO_REG_CLR0);
-    switch (gpio_bank_sel(pin, 32)) {
-        case 1:
-            regbase = GPIO_ADDR(GPIO_REG_CLR1);
-            break;
-        default:
-            break;
-    }
-
-    *regbase = (1 << shiftam);
+    unsigned int *regbase = gpio_bank_sel(pin, 1, GPIO_CLEARS);
+    mem_regw(1, regbase, 1, (pin % 32));
 }
 
 void gpio_func(unsigned int pin, unsigned int func) {
-    unsigned int shiftam = (pin % 10) * 3;
-    unsigned int *regbase = GPIO_ADDR(GPIO_REG_FSEL0);
-    switch (gpio_bank_sel(pin, 10)) {
-        case 1:
-            regbase = GPIO_ADDR(GPIO_REG_FSEL1);
-            break;
-        case 2:
-            regbase = GPIO_ADDR(GPIO_REG_FSEL2);
-            break;
-        case 3:
-            regbase = GPIO_ADDR(GPIO_REG_FSEL3);
-            break;
-        case 4:
-            regbase = GPIO_ADDR(GPIO_REG_FSEL4);
-            break;
-        case 5:
-            regbase = GPIO_ADDR(GPIO_REG_FSEL5);
-            break;
-        default:
-            break;
-    }
-    
-    *regbase = *regbase | ((func & 0x7) << shiftam);
+    unsigned int *regbase = gpio_bank_sel(pin, 3, GPIO_FSELS);
+    mem_regw(3, regbase, func,(3 * (pin % 10)));
 }

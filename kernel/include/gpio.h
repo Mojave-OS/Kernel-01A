@@ -7,6 +7,8 @@
 typedef unsigned int pin_t;
 typedef unsigned int *memreg;
 
+void init_gpio_map();
+
 /* GPIO Pin Read Operations */
 
 // Returns the actual value of the pin via
