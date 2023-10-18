@@ -8,6 +8,7 @@ BOOT = bootblock
 INCLUDE_DIR = $(KERNEL)/include
 KERN_SRC_DIR = $(KERNEL)/src
 BOOT_SRC_DIR = $(BOOT)/src
+SDCARD = bootfs
 
 #
 # File Aggregation
@@ -45,5 +46,5 @@ clean:
 	- rm mmojave.img
 
 transfer:
-	cp ./mmojave.img /media/diego/bootfs/mmojave.img
-	md5sum ./mmojave.img /media/diego/bootfs/mmojave.img
+	cp ./mmojave.img /media/diego/$(SDCARD)/mmojave.img
+	md5sum ./mmojave.img /media/diego/$(SDCARD)/mmojave.img

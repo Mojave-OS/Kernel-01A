@@ -15,7 +15,7 @@ OBJ_FILES = $(patsubst %.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 #
 # Flags for Compiling
 #
-CCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
+CCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -lgcc
 LDFLAGS = -nostdlib
 CC = /home/diego/Documents/Cross-Compilers/aarch64-none-elf/arm-gnu-toolchain-12.3.rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf
 

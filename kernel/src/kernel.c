@@ -13,8 +13,8 @@ void kernel_main() {
     unsigned int PIN_COUNT = 3;
     unsigned int PINS[PIN_COUNT];
     PINS[0] = 40;
-    PINS[1] = 38;
-    PINS[2] = 36;
+    PINS[1] = 21;
+    PINS[2] = 28;
     
     /* initialize the gpio map */
     init_gpio_map();
