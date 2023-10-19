@@ -4,7 +4,7 @@
 #define GPIO_REG_BASE 0xfe200000
 #define GPIO_ADDR(reg) ((unsigned int *) (GPIO_REG_BASE + reg))
 
-// GPIO Related Registers
+// GPIO Related Registers and their offsets
 #define GPIO_REG_SET0                   0x1c
 #define GPIO_REG_SET1                   0x20
 #define GPIO_REG_CLR0                   0x28
@@ -22,15 +22,17 @@
 #define GPIO_REG_PL2                    0xec
 #define GPIO_REG_PL3                    0xf0
 
-// function for manipulation of mem registers
-/* TODO: Fix Implementation Issue 
-    As of right now, this only deals with WO registers and will
-    clear registers that are designed to allow for RW access (i.e., 
-    registers like FSELn, etc).
-
-    The issue is trivial and shouldn't affect our signs of life tests.
-*/
+// function for manipulation of mem registers without read 
+// perms
 void mem_regw(
+    unsigned int granularity,
+    unsigned int *address,
+    unsigned int value,
+    unsigned int index
+);
+
+// function for manipulation of mem registers that allow for RW.
+void mem_regrw(
     unsigned int granularity,
     unsigned int *address,
     unsigned int value,

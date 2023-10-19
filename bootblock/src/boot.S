@@ -1,7 +1,6 @@
 .section ".text.boot"  // Make sure the linker puts this at the start of the kernel image
 
 .global _start  // Execution starts here
-
 _start:
     // Check processor ID is zero (executing on main core), else hang
     mrs     x1, mpidr_el1
@@ -16,13 +15,13 @@ _start:
     ldr     x1, =_start
     mov     sp, x1
 
-    // Clean the BSS section
-    ldr     x1, =__bss_start     // Start address
-    ldr     w2, =__bss_size      // Size of the section
-3:  cbz     w2, 4f               // Quit loop if zero
-    str     xzr, [x1], #8
-    sub     w2, w2, #1
-    cbnz    w2, 3b               // Loop if non-zero
+    // clear bss
+    ldr     x5, =__bss_start
+    ldr     w6, =__bss_size
+3:  cbz     w6, 4f
+    str     xzr, [x5], #8
+    sub     w6, w6, #1
+    cbnz    w6, 3b
 
     // Jump to our main() routine in C (make sure it doesn't return)
 4:  bl      kernel_main

@@ -26,14 +26,14 @@ volatile pin_t gpio(unsigned int pin);
 
 // sets the pin as high, pin func must be set to 
 // output beforehand.
-void gpio_set(unsigned int pin);
+volatile void gpio_set(unsigned int pin);
 
 // sets the pin as low, pin func must be set to 
 // output beforehand.
-void gpio_clear(unsigned int pin);
+volatile void gpio_clear(unsigned int pin);
 
 // sets the pin's pull up/down resistor
-void gpio_pull(unsigned int pin, unsigned int pullv);
-void gpio_func(unsigned int pin, unsigned int func);
+volatile void gpio_pull(unsigned int pin, unsigned int pullv);
+volatile void gpio_func(unsigned int pin, unsigned int func);
 
 #endif
