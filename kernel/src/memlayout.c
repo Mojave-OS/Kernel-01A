@@ -17,5 +17,7 @@ void mem_regrw(
     unsigned int index
 ) {
     unsigned int shiftam = (index * granularity);
-    *address = *address | (value << shiftam);
+    unsigned int lhs = *address >> (shiftam + granularity);
+    *address = *address & ~(1 << shiftam);
+    *address = *address | (value << shiftam) | lhs;
 }

@@ -61,7 +61,7 @@ void gpio_clear(unsigned int pin) {
 
 void gpio_func(unsigned int pin, unsigned int func) {
     unsigned int *regbase = gpio_bank_sel(pin, 3, GPIO_FSELS);
-    mem_regrw(3, regbase, func,(3 * (pin % 10)));
+    mem_regrw(3, regbase, func, (3 * (pin % 10)));
 }
 
 

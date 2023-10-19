@@ -22,14 +22,14 @@ BOOT_OBJ_FILES = $(wildcard $(BUILD_DIR)/$(BOOT_SRC_DIR)/*.o)
 CCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
 LDFLAGS = -nostdlib
 LINKF = linker.ld
-CC = /home/diego/Documents/Cross-Compilers/aarch64-none-elf/arm-gnu-toolchain-12.3.rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf
+CC = /home/diego/Documents/Cross-Compilers/aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu
 
 #
 # Directives
 #
-all: mmojave.img
+all: kernel8.img
 
-mmojave.img: 
+kernel8.img: 
 	$(CC)-ld $(LDFLAGS) -T $(LINKF) $(BOOT_OBJ_FILES) $(KERN_OBJ_FILES) -o $(patsubst %.img, %.elf, $@)
 	$(CC)-objcopy -O binary $(patsubst %.img, %.elf, $@) $@
 
@@ -42,9 +42,9 @@ update:
 
 clean:
 	- rm -rf build/*
-	- rm mmojave.elf
-	- rm mmojave.img
+	- rm *.elf
+	- rm *.img
 
 transfer:
-	cp ./mmojave.img /media/diego/$(SDCARD)/mmojave.img
-	md5sum ./mmojave.img /media/diego/$(SDCARD)/mmojave.img
+	cp ./kernel8.img /media/diego/$(SDCARD)/kernel8.img
+	md5sum ./kernel8.img /media/diego/$(SDCARD)/kernel8.img

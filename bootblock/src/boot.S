@@ -1,7 +1,6 @@
 .section ".text.boot"  // Make sure the linker puts this at the start of the kernel image
 
 .global _start  // Execution starts here
-.org 0x80000
 _start:
     // Check processor ID is zero (executing on main core), else hang
     mrs     x1, mpidr_el1
