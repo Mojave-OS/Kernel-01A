@@ -49,23 +49,22 @@ volatile pin_t gpio(unsigned int pin) {
     return *gpio_bank_sel(pin, 1, GPIO_LEVS);
 }
 
-void gpio_set(unsigned int pin) {
+volatile void gpio_set(unsigned int pin) {
     unsigned int *regbase = gpio_bank_sel(pin, 1, GPIO_SETS);
     mem_regw(1, regbase, 1, (pin % 32));
 }
 
-void gpio_clear(unsigned int pin) {
+volatile void gpio_clear(unsigned int pin) {
     unsigned int *regbase = gpio_bank_sel(pin, 1, GPIO_CLEARS);
     mem_regw(1, regbase, 1, (pin % 32));
 }
 
-void gpio_func(unsigned int pin, unsigned int func) {
+volatile void gpio_func(unsigned int pin, unsigned int func) {
     unsigned int *regbase = gpio_bank_sel(pin, 3, GPIO_FSELS);
     mem_regrw(3, regbase, func, (3 * (pin % 10)));
 }
 
-
-void gpio_pull(unsigned int pin, unsigned int pullv) {
+volatile void gpio_pull(unsigned int pin, unsigned int pullv) {
     unsigned int *regbase = gpio_bank_sel(pin, 2, GPIO_PLS);
     mem_regrw(2, regbase, pullv, (pin % 16));
 }
