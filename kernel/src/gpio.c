@@ -37,12 +37,21 @@ void init_gpio_map() {
 // the pin % 57 may be unneccesarry but prevents a 
 // case where we choose a pin > the provided number of regs in the bank
 // causing a buffer overflow - in theory.
-static inline unsigned int *gpio_bank_sel(
+unsigned int *gpio_bank_sel(
     unsigned int pin,
     unsigned int granularity,
     unsigned int **banks
 ) {
     return banks[(((pin % 57) * granularity) / 32)];
+}
+
+unsigned int *gpio_bank_sel_max(
+    unsigned int pin,
+    unsigned int granularity,
+    unsigned int **banks,
+    unsigned int max
+) {
+    return banks[(((pin % 57) * granularity) / max)];
 }
 
 volatile pin_t gpio(unsigned int pin) {
@@ -60,8 +69,8 @@ volatile void gpio_clear(unsigned int pin) {
 }
 
 volatile void gpio_func(unsigned int pin, unsigned int func) {
-    unsigned int *regbase = gpio_bank_sel(pin, 3, GPIO_FSELS);
-    mem_regrw(3, regbase, func, (3 * (pin % 10)));
+    unsigned int *regbase = gpio_bank_sel_max(pin, 3, GPIO_FSELS, 30);
+    mem_regrw(3, regbase, func, (pin % 10));
 }
 
 volatile void gpio_pull(unsigned int pin, unsigned int pullv) {

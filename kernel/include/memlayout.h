@@ -24,7 +24,7 @@
 
 // function for manipulation of mem registers without read 
 // perms
-void mem_regw(
+volatile void mem_regw(
     unsigned int granularity,
     unsigned int *address,
     unsigned int value,
@@ -32,7 +32,7 @@ void mem_regw(
 );
 
 // function for manipulation of mem registers that allow for RW.
-void mem_regrw(
+volatile void mem_regrw(
     unsigned int granularity,
     unsigned int *address,
     unsigned int value,

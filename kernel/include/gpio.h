@@ -21,6 +21,18 @@ void init_gpio_map();
 // Returns the actual value of the pin via
 // the pin level register.
 volatile pin_t gpio(unsigned int pin);
+unsigned int *gpio_bank_sel_max(
+    unsigned int pin,
+    unsigned int granularity,
+    unsigned int **banks,
+    unsigned int max
+);
+
+unsigned int *gpio_bank_sel(
+    unsigned int pin,
+    unsigned int granularity,
+    unsigned int **banks
+);
 
 /* GPIO Pin Write Operations */
 
