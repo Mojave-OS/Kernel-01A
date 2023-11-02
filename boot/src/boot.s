@@ -24,6 +24,10 @@ _start:
     cbnz    w6, 3b
 
     // Jump to our main() routine in C (make sure it doesn't return)
-4:  bl      kernel_main
+4:  bl      kernel_main  // kentry will load the kernel 
     // In case it does return, halt the master core too
     b       1b
+
+.global _end
+_end:
+    .word 0x0

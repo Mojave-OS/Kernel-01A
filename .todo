@@ -1,0 +1,4 @@
+# Current Task
+
+We have revamped our Makefile build system to be more modular and aesthetic. Up next is to 
+test that our Makefile still works with the new directory structure.

@@ -1,0 +1,86 @@
+#
+# Configuration For Make
+#
+BOARD=bcm2711
+DRIVERS=gpio
+
+#
+# Compiler Directives
+#
+FAMILY=aarch64-none-elf
+
+# compiler
+CC=$(FAMILY)-gcc
+CCFLAGS=-Wall -O2 -nostdlib -nostdinc -ffreestanding -nostartfiles -lgcc
+
+# linker
+LD=$(FAMILY)-ld
+LDFLAGS=-nostdlib
+LINKF=linker.ld
+
+# objcopy
+OBJCPY=$(FAMILY)-objcopy
+
+# 
+# Folder Related Variables
+#
+DBUILD=build
+DDRIVER=drivers
+DKERN=kernel
+DBOOT=boot
+
+#
+# "Aesthetic" Settings
+#
+KERN_NAME=kernel8
+CPRINT_RED:=\033[;31m
+CPRINT_GREEN:=\033[;32m
+CPRINT_YELLOW:=\033[;33m
+CPRINT_BLUE:=\033[;34m
+CPRINT_MAGENTA:=\033[;35m
+CPRINT_CYAN:=\033[;36m
+CPRINT_END:=\033[0m
+
+export CPRINT_RED
+export CPRINT_BLUE
+export CPRINT_END
+export CPRINT_CYAN
+
+#
+# Variable Exports
+#
+export CC
+export CCFLAGS
+export BOARD
+export DBUILD
+export DDRIVER
+export DBOOT
+export DKERN
+
+.PHONY: all
+all: drivers boot kernel
+
+.PHONY: drivers boot kernel
+drivers:
+	@echo -e "$(CPRINT_YELLOW)Starting the driver build...$(CPRINT_END)"
+	-@$(MAKE) -f $(DDRIVER)/UMakefile DRIVERS=$(DRIVERS) BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
+
+
+boot:
+	@echo -e "$(CPRINT_YELLOW)Starting the boot build...$(CPRINT_END)"
+	@$(MAKE) -f $(DBOOT)/UMakefile BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
+
+KERN_OBJ_FILES := $(wildcard $(DBUILD)/$(DKERN)/*.o)
+kernel:
+	@echo -e "$(CPRINT_YELLOW)Starting the kernel build process...$(CPRINT_END)"
+	@$(MAKE) -f $(DKERN)/Makefile DRIVERS=$(DRIVERS) BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
+
+	@$(LD) $(LDFLAGS) -T$(LINKF) $(KERN_OBJ_FILES) -o $(KERN_NAME).elf
+	@$(OBJCPY) -O binary $(KERN_NAME).elf $(KERN_NAME).img
+	@md5sum $(KERN_NAME).img 
+
+.PHONY: clean
+clean:
+	-@ rm -rf $(DBUILD)/
+	-@ mkdir -p $(DBUILD)/$(DKERN)/
+

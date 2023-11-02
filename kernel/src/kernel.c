@@ -1,4 +1,3 @@
-#include "memlayout.h"
 #include "gpio.h"
 
 void delay(int seconds) {

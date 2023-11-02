@@ -4,4 +4,7 @@
 *~
 *.elf
 *.img
+*.pdf
 build/
+dumpf
+.vscode/

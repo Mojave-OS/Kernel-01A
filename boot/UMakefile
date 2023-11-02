@@ -1,0 +1,16 @@
+# we are the boot makefile! our code is self-reliant as we are the first
+# code that runs - so our makefile is simple (for now).
+
+SRC_OBJS=$(wildcard $(DBOOT)/src/*.s)
+BUILD_OBJS=$(patsubst $(DBOOT)/src/%.s, $(BUILD_LOC)/%.o, $(SRC_OBJS))
+
+all: $(BUILD_OBJS) md5summary
+
+.PHONY: md5summary
+md5summary:
+	@echo -e -n "$(CPRINT_BLUE)"
+	@md5sum $(BUILD_OBJS)
+	@echo -e "$(CPRINT_END)"
+
+$(BUILD_LOC)/%.o: $(DBOOT)/src/%.s
+	@$(CC) -c $(CCFLAGS) -o $@ $<

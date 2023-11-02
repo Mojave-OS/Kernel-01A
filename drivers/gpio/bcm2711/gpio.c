@@ -1,4 +1,3 @@
-#include "memlayout.h"
 #include "gpio.h"
 
 unsigned int *GPIO_SETS[2];
@@ -28,6 +27,28 @@ void init_gpio_map() {
     GPIO_PLS[1] = GPIO_ADDR(GPIO_REG_PL1);
     GPIO_PLS[2] = GPIO_ADDR(GPIO_REG_PL2);
     GPIO_PLS[3] = GPIO_ADDR(GPIO_REG_PL3);
+}
+
+static volatile void mem_regw(
+    unsigned int granularity,
+    unsigned int *address,
+    unsigned int value,
+    unsigned int index
+) {
+    unsigned int shiftam = (index * granularity);
+    *address = (value << shiftam);
+}
+
+static volatile void mem_regrw(
+    unsigned int granularity,
+    unsigned int *address,
+    unsigned int value,
+    unsigned int index
+) {
+    unsigned int shiftam = (index * granularity);
+    volatile unsigned int lhs = (*address >> (shiftam + granularity));
+    *address = *address & ~(1 << shiftam);
+    *address = *address | (value << shiftam) | (lhs << (shiftam + granularity));
 }
 
 // selects the proper memory mapped register in a register bank (i.e.,
@@ -77,3 +98,4 @@ volatile void gpio_pull(unsigned int pin, unsigned int pullv) {
     unsigned int *regbase = gpio_bank_sel(pin, 2, GPIO_PLS);
     mem_regrw(2, regbase, pullv, (pin % 16));
 }
+
