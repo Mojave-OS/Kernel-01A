@@ -22,7 +22,6 @@ void kernel_main() {
         gpio_pull(PINS[i], GPIO_PULLF);
         gpio_func(PINS[i], GPIO_FUNC_OUT);
     }
-    // gpio_func(21, GPIO_FUNC_IN);
 
     /* set and clear pins with delay */
     while (1) {
@@ -30,14 +29,12 @@ void kernel_main() {
         for (unsigned int i = 0; i < PIN_COUNT; i++) {
             gpio_set(PINS[i]);
         }
-        // gpio_pull(21, GPIO_PULLD);
         delay(1);
         
         /* set the pins */
         for (unsigned int i = 0; i < PIN_COUNT; i++) {
             gpio_clear(PINS[i]);
         }
-        // gpio_pull(21, GPIO_PULLU);
         delay(1);
     }
 }

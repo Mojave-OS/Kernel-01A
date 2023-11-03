@@ -12,7 +12,7 @@ Kernel-01A is decoupled from the Raspberry Pi's Hardware, **but** we still want 
 1. *Simplicity*: We strive to know our code-base in and out. Which means that using third-party drivers for the Pi adds an extra level of complexity in that we must read the documentation in and out, from the docs to the source-code.
     - This can add extra development time, as we must read through documentation to first determine if the driver is right for us, how the driver design decisions might affect our kernel's design, etc.
 
-We are not arguing against the inclusion of third-party drivers into our kernel/OS. But for the bootstrapping process, it's clear that implementing our own drivers (at least for GPIO), is the fast and correct way to go; while providing our team with an invaluable learning experience.
+We are not arguing against the inclusion of third-party drivers into our kernel/OS. But for the bootstrapping process, it's clear that implementing our own drivers (at least for GPIO), is the fast and correct way to go; while providing our team with an invaluable learning experience. This does mean that other parts of the kernel will see an extended development time as we go about adding drivers.
 
 ## List of Drivers
 
@@ -38,15 +38,15 @@ GPIO-Based Communication Protocol
 
 We provide our own clock-independent communication protocol done over GPIO.
 
-> I don't claim to be the inventory, but I did come up with this by myself with some "back of the napkin" drawings over coffee one day
+> I don't claim to be the inventor, but I did come up with this by myself with some "back of the napkin" drawings over coffee! The more you know.
 
 Why make another communication protocol? In the early days of the kernel design process, when our team was still trying to get code to run on the Pi 4B, we weren't able to debug because of the following:
 
 1. We didn't have a Serial to USB for debugging on the computer.
 2. When we did get one, it seemed to be broken (either our implementation, or the cable itself).
-3. We didn't have exposure to UART/Serial Based Communications (which made debugging the issues worse). 
+3. We didn't have exposure to UART/Serial Based Communications (which made debugging the issues much worse). 
 
-It didn't help that UART is usually the first look in to the kernel (beyond flashing LEDs). We proposed GCP as an alternative. Here's how it works.
+It didn't help that UART is usually the first look into the kernel (beyond flashing LEDs). We proposed GCP as an alternative. Here's how it works.
 
 ***GPIO Communication***
 
