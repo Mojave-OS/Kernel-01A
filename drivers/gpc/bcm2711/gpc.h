@@ -1,0 +1,26 @@
+#ifndef __DRIVERS_GPC_H
+#define __DRIVERS_GPC_H
+
+#define BUFF_MAX_RECV   (100)
+#define BUFF_MAX_SEND   (100)
+#define PIN_TX          2
+#define PIN_RX          3
+#define PIN_TA          21
+#define PIN_RD          20
+
+/* state related things */
+enum gpc_state {
+    TRANSMIT_ASSERTING,
+    YIELD_READY,
+    IDLING,
+};
+
+/* book-keeping */
+void init_gpc();
+
+/* transmit related */
+int send(char *c);
+int putc(char c);
+void transmitb(int bit);
+
+#endif

@@ -1,5 +1,5 @@
-#ifndef _KERN_GPIO_H
-#define _KERN_GPIO_H
+#ifndef __DRIVERS_GPIO_H
+#define __DRIVERS_GPIO_H
 
 /* GPIO Func Values */
 #define GPIO_FUNC_OUT           0x1
@@ -32,6 +32,17 @@
 #define GPIO_REG_PL1                    0xe8
 #define GPIO_REG_PL2                    0xec
 #define GPIO_REG_PL3                    0xf0
+#define GPIO_REG_GPEDS0                 0x40
+#define GPIO_REG_GPEDS1                 0x44
+#define GPIO_REG_GPREN0                 0x4c
+#define GPIO_REG_GPREN1                 0x50
+#define GPIO_REG_GPFEN0                 0x58
+#define GPIO_REG_GPFEN1                 0x5c
+#define GPIO_REG_GPHEN0                 0x64
+#define GPIO_REG_GPHEN1                 0x68
+#define GPIO_REG_GPLEN0                 0x70
+#define GPIO_REG_GPLEN1                 0x74
+
 
 typedef unsigned int pin_t;
 typedef unsigned int *memreg;
@@ -66,8 +77,20 @@ volatile void gpio_set(unsigned int pin);
 // output beforehand.
 volatile void gpio_clear(unsigned int pin);
 
+// gets the input level of the pin
+volatile int gpio_lev(unsigned int pin);
+
 // sets the pin's pull up/down resistor
 volatile void gpio_pull(unsigned int pin, unsigned int pullv);
 volatile void gpio_func(unsigned int pin, unsigned int func);
+
+volatile int gpio_event(unsigned int pin);
+volatile void gpio_falling_edge(unsigned int pin);
+volatile void gpio_rising_edge(unsigned int pin);
+volatile void gpio_clear_ev(unsigned int pin);
+
+/* some functions that build on the gpio primitives */
+unsigned int sample_pin(int pin, int min_sample);
+
 
 #endif
