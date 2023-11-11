@@ -11,12 +11,7 @@
 #define PIN_IA          17
 
 /* state related things */
-enum gpc_state {
-    IDLE,
-    PENDING_CONFIRMATION,
-    PREP_TX,
-    ASSERT_TA
-};
+extern void (*state)(int);
 
 /* book-keeping */
 void init_gpc();
@@ -24,10 +19,7 @@ void init_gpc();
 /* transmit related */
 int send(char *c);
 int putc(char c);
-void transmitb(int bit);
 
 /* testing our revised functions */
-void _send(char *c);
-void parse_state();
 
 #endif

@@ -2,204 +2,97 @@
 #include "gpio/bcm2711/gpio.h"
 
 #define MIN_SAMPLE_COUNT 3
+#define NINPUT_PINS 2
 
-/* buffers & friends */
-char recvbf[BUFF_MAX_RECV];
-char sendbf[BUFF_MAX_SEND];
+int buf = 0;
+
+/**
+ * @brief Will conditionally tranfer if the state is equal to the inputs.
+ * 
+ */
+#define TRANSFER(expected, handler, shift) \
+	if ((inputs >> shift) == (expected | 0)) { \
+		state = handler; \
+		return; \
+	} \
+
+/**
+ * @brief Forces the state to be a certain value, will change if it doesn't
+ * match.
+ * 
+ */
+#define TRANSFER_FORCE(expected, handler) \
+	if ((inputs >> shift) != (expected | 0)) { \
+		state = handler; \
+		return; \
+	} \
+
+/* inputs */
+int INPUT_PINS[NINPUT_PINS];
+int buffer_count;
+
+/* state handling */
+void (*state)(int);
 
 /* book-keeping */
-enum gpc_state state;
-unsigned int si; 					// sendbf index
-unsigned int ci; 					// character index
-unsigned int need_sent;
+void init_gpc() {
+	buffer_count = 0;
+	INPUT_PINS[0] = PIN_RD;
+	INPUT_PINS[1] = PIN_ID;
+}
 
-static void init_pins_for_gpc() {
-	gpio_func(PIN_TX, GPIO_FUNC_OUT);
-	gpio_func(PIN_TA, GPIO_FUNC_OUT);
-	gpio_func(PIN_IA, GPIO_FUNC_OUT);
-
-	gpio_clear(PIN_TX);
-	gpio_clear(PIN_TA);
-	gpio_clear(PIN_IA);
-
-	gpio_pull(PIN_RX, GPIO_PULLD);
-	gpio_pull(PIN_RD, GPIO_PULLD);
-	gpio_pull(PIN_ID, GPIO_PULLD);
-	
-	gpio_func(PIN_RX, GPIO_FUNC_IN);
-	gpio_func(PIN_RD, GPIO_FUNC_IN);
-	gpio_func(PIN_ID, GPIO_FUNC_IN);
-} 
-
-void init_gpc() 
+static int read_inputs(void)
 {
-	init_pins_for_gpc();
-	state = IDLE;
-}
+	int reading = 0;
 
-int send(char *c) {
-	for (; *c != '\0'; c++) {
-		putc(*c);
+	for (unsigned int i = 0; i < NINPUT_PINS; i++) {
+		// keep in mind that we expect the reading to be in the following
+		// format: RD | ID | buffer_count > 0 (that's why we have this << )
+		reading |= (sample_pin(INPUT_PINS[i]) << (NINPUT_PINS - i));
 	}
-
-	return 0x0;
+	reading |= ((buffer_count > 0) & 0b1); // paranoia check
+	return reading;
 }
 
+/* declare handlers for our states */
 /**
- * @brief Sends a character, which is 1 byte (8 bits).
+ * @brief Prepare a bit to be sent on the "wire".
  * 
- * @param c character to send 
+ * @param inputs state from pins.
  */
-int putc(char c) {
-	unsigned int i = 0; 
-	for (; i < sizeof(char) * 8; i++) {
-		transmitb((unsigned int) (c) & 0b1);
-		c = c >> 1; 
-	}
-
-	return 0;
-}
-
-/**
- * @brief Will transmit a bit via the transmit line, currently doesn't
- * check for a read declaration by the other endpoint. Will then wait
- * for it's RD line to be set to high.
- * 
- * @param bit bit to send over the wire
- */
-void transmitb(int bit) {
-	if ((bit & 0b1))
-		gpio_set(PIN_TX);
-	else gpio_clear(PIN_TX);
-
-	gpio_set(PIN_TA);
-
-	/* now we are waiting for a falling edge */
-	while (!sample_pin(PIN_RD, MIN_SAMPLE_COUNT));
-	while (sample_pin(PIN_RD, MIN_SAMPLE_COUNT));
-	
-	gpio_clear(PIN_TX);
+void enqueue_tx(int inputs) {
+	gpio_clear(PIN_IA);
 	gpio_clear(PIN_TA);
+
+	/* handle state transfers for unexpected cases */
+	TRANSFER_FORCE(0b011, idle, 0); // if rd
+
+	/* handle enqueue operations */
+	unsigned int c = buf & 0b1;
+
+	buffer_count--;
 }
 
-static void goto_idle(int *reading) {
-	switch (*reading) {
-	case 0b01:
-		if (need_sent > 0) {
-			gpio_set(PIN_TA);
-			state = PENDING_CONFIRMATION;
-			return;
-		}
-	}
+void assert_ta(int inputs) {
+
 }
 
-static void goto_prep_tx(int *reading) {
-	char *c;
-	switch (*reading) {
-	case 0b00:
-		c = &sendbf[si % need_sent];
-		if ((unsigned int) (*c) & (0b1 << ci))
-			gpio_set(PIN_TX);
-		else 
-			gpio_clear(PIN_TX);
-		
-		if (++ci == 8) {
-			si++;
-			ci = 0;
-		}		
-		state = ASSERT_TA;
-		return;
-	default:
-		break;
-	}
+void tx_incoming(int inputs) {
 
-	// we did not pass the test (i.e., receiver may be trying
-	// to send before us)
-	gpio_clear(PIN_TA); // may be a logic issue here
-	state = IDLE;
-	return;
 }
 
-static void goto_pending_confirm(int *reading) {
-	unsigned int i = 0, count = 0;
-	switch (*reading) {
-		case 0b00:
-			for (; i < 2; i++) {
-				count += sample_pin(PIN_RD, MIN_SAMPLE_COUNT);
-				count += sample_pin(PIN_ID, MIN_SAMPLE_COUNT);
-			}
+void read_rx(int inputs) {
 
-			if (count == 0) {
-				// we have confirmed our send, so we will now 
-				// go into the prep state
-				state = PREP_TX;
-				goto_prep_tx(reading);
-				return;
-			}
-			break;
-		default:
-			break;
-	}
+}
 
-	// we did not pass the test (i.e., receiver may be trying
-	// to send before us)
+void idle(int inputs) {
+	/* handle idle operations */
 	gpio_clear(PIN_TA);
-	state = IDLE;
-	return;
-}
+	gpio_set(PIN_IA);
 
-static void goto_assert_ta(int *reading) {
-	switch (*reading) {
-	case 0b00:
-		gpio_clear(PIN_IA);
-		return;
-	default:
-		state = IDLE;
-		break;
-	}
-
-	// we did not pass the test (i.e., receiver may be trying
-	// to send before us)
-	gpio_clear(PIN_TA); // may be a logic issue here
-	state = IDLE;
-	return;
-}
-
-static int _strlen(char *c) {
-	int count = 0, i = 0;
-	while (c[i] != '\0') {
-		count++;
-	}
-
-	return count;
-}
-
-void _send(char *c) {
-	int i = 0;
-	int len = _strlen(c);
-
-	for (; i < len && need_sent < BUFF_MAX_SEND; i++) {
-		sendbf[need_sent++] = c[i];
-	}
-}
-
-/* rewrite */
-void parse_state() {
-	int reading = sample_pin(PIN_ID, MIN_SAMPLE_COUNT);
-	reading |= (sample_pin(PIN_RD, MIN_SAMPLE_COUNT) << 1);
-
-	switch (state) {
-	case IDLE:
-		goto_idle(&reading);
-		break;
-	case PENDING_CONFIRMATION:
-		goto_pending_confirm(&reading);
-		break;
-	case PREP_TX:
-		goto_prep_tx(&reading);
-		break;
-	case ASSERT_TA:
-		goto_assert_ta(&reading);
-		break;
-	} 
+	/* handle state transfers */
+	TRANSFER(0b001, tx_incoming, 0);
+	TRANSFER(0b000, tx_incoming, 0);
+	TRANSFER(0b011, enqueue_tx, 0);
+	TRANSFER(0b010, idle, 0);
 }
