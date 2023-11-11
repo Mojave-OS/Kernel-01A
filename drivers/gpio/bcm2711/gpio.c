@@ -11,10 +11,8 @@ unsigned int *GPIO_GPFENS[2];
 
 static void delay(int amount) 
 {
-    for (unsigned int s = 0; s < amount; s++) {
-        for (volatile unsigned int j = 0; j < (500); j++) {
-            __asm__ volatile ("nop");
-        }
+    for (volatile unsigned int j = 0; j < (100); j++) {
+        __asm__ volatile ("nop");
     }
 }
 
@@ -161,8 +159,8 @@ unsigned int sample_pin(int pin, int min_sample)
             count = 0;
         }
 
-        delay(10);
+        delay(GPIO_SAMPLE_DELAY);
     }
 
-    return state_input;
+    return state_input & 0b1;
 }

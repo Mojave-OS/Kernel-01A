@@ -7,12 +7,15 @@
 #define PIN_RX          3
 #define PIN_TA          21
 #define PIN_RD          20
+#define PIN_ID          16
+#define PIN_IA          17
 
 /* state related things */
 enum gpc_state {
-    TRANSMIT_ASSERTING,
-    YIELD_READY,
-    IDLING,
+    IDLE,
+    PENDING_CONFIRMATION,
+    PREP_TX,
+    ASSERT_TA
 };
 
 /* book-keeping */
@@ -22,5 +25,9 @@ void init_gpc();
 int send(char *c);
 int putc(char c);
 void transmitb(int bit);
+
+/* testing our revised functions */
+void _send(char *c);
+void parse_state();
 
 #endif

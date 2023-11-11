@@ -43,7 +43,10 @@
 #define GPIO_REG_GPLEN0                 0x70
 #define GPIO_REG_GPLEN1                 0x74
 
+/* sample related vars */
+#define GPIO_SAMPLE_DELAY 10            // unit is cycles 
 
+/* memreg related */
 typedef unsigned int pin_t;
 typedef unsigned int *memreg;
 

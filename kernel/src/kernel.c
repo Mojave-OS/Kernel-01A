@@ -7,9 +7,12 @@ void kernel_main() {
     init_gpio_map();
     init_gpc();
 
+    send("Hello, kernel!\n");
     while (1) {
-        send("Hello, kernel!\n");
+        parse_state();
     }
+    
 
+    delay(4);
     panic();
 }
