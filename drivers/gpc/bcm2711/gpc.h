@@ -22,7 +22,8 @@ void putc(char c);
 void printg(char *c);
 
 /* testing our revised functions */
-int bits_to_send();
+int buffer_empty();
+void buffer_flush();
 void exec();
 
 #endif

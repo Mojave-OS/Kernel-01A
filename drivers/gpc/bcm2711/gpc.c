@@ -10,6 +10,7 @@
 
 int buffer[NBTS_MAX];
 int bts = 0;
+int max_bit = 0;
 int current_bit = 0;
 
 /**
@@ -86,7 +87,12 @@ static void assert_ta(int inputs) {
 	gpio_set(PIN_TA);
 
 	/* handle state transitions for unwanted cases */
-	TRANSFER_FORCE(0b00, cleanup_tx, 1);
+	// TRANSFER_FORCE(0b00, cleanup_tx, 1);
+	while ((read_inputs()) == 0b001) {
+		continue;
+	}
+
+	cleanup_tx(inputs);
 }
 
 static void cleanup_tx(int inputs) {
@@ -101,7 +107,7 @@ static void cleanup_tx(int inputs) {
 
 	/* set up tx state bits for next enqueue */
 	bts--; 
-	current_bit = (current_bit + 1) % (NBTS_MAX * 8);
+	current_bit = (current_bit + 1);
 	state = idle;
 }
 
@@ -115,8 +121,6 @@ static void idle(int inputs) {
 	gpio_set(PIN_IA);
 
 	/* handle state transfers */
-	TRANSFER(0b001, tx_incoming, 0);
-	TRANSFER(0b000, tx_incoming, 0);
 	TRANSFER(0b011, enqueue_tx, 0);
 	TRANSFER(0b010, idle, 0);
 }
@@ -158,9 +162,13 @@ void init_gpc() {
 }
 
 void putb(int b) {
-	int i = BIT_BUFFER_INDX(bts);
-	int j = B2S_INDX(bts);
+	if (max_bit > (NBTS_MAX * 8) - 1) {
+		return;
+	}
+	int i = BIT_BUFFER_INDX(max_bit);
+	int j = B2S_INDX(max_bit);
 	buffer[i % NBTS_MAX] |= ((b & 0b1) << j);
+	max_bit++;
 	bts++;
 }
 
@@ -176,6 +184,16 @@ void printg(char *c) {
 	}
 }
 
-int bits_to_send() {
-	return bts;
+int buffer_empty() {
+	return bts <= 0;
+}
+
+void buffer_flush() {
+	for (unsigned int i = 0; i < NBTS_MAX; i++) {
+		buffer[i] = 0;
+	}
+
+	bts = 0;
+	max_bit = 0;
+	current_bit = 0;
 }
