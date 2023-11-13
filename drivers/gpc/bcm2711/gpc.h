@@ -17,9 +17,12 @@ extern void (*state)(int);
 void init_gpc();
 
 /* transmit related */
-int send(char *c);
-int putc(char c);
+void putb(int b);
+void putc(char c);
+void printg(char *c);
 
 /* testing our revised functions */
+int bits_to_send();
+void exec();
 
 #endif

@@ -22,7 +22,7 @@ void panic() {
 
 void delay(int seconds) {
     for (unsigned int s = 0; s < seconds; s++) {
-        for (volatile unsigned int j = 0; j < (500); j++) {
+        for (volatile unsigned int j = 0; j < (1000000 * 2.5); j++) {
             __asm__ volatile ("nop");
         }
     }
