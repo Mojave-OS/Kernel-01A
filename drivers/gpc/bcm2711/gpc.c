@@ -3,15 +3,13 @@
 
 #define MIN_SAMPLE_COUNT 3
 #define NINPUT_PINS 2
-#define NBTS_MAX (1 << 15)
+#define NBTS_MAX (1024 << 1)
 
 #define BIT_BUFFER_INDX(bts) (bts / 8)
 #define B2S_INDX(bts) (bts % 8)
 
 int buffer[NBTS_MAX];
-int bts = 0;
-int max_bit = 0;
-int current_bit = 0;
+int start = 0, end = 0;
 
 static void delay(int cycles) {
 	for (volatile unsigned int j = 0; j < (cycles); j++) {
@@ -60,7 +58,7 @@ static int read_inputs(void)
 		// format: RD | ID | buffer_count > 0 (that's why we have this << )
 		reading |= (sample_pin(INPUT_PINS[i], MIN_SAMPLE_COUNT) << (NINPUT_PINS - i));
 	}
-	reading |= ((bts > 0) & 0b1); // paranoia check
+	reading |= (((end - start) > 0) & 0b1); // paranoia check
 	return reading;
 }
 
@@ -77,11 +75,8 @@ static void enqueue_tx(int inputs) {
 	TRANSFER_FORCE(0b011, idle, 0); // if rd
 	gpio_clear(PIN_IA);
 
-	int i = BIT_BUFFER_INDX(current_bit);
-	int j = B2S_INDX(current_bit);
-
 	/* handle enqueue operations */
-	unsigned int c = (buffer[i % NBTS_MAX] >> j) & 0b1;
+	unsigned int c = (buffer[start / 8] >> (start % 8)) & 0b1;
 	if (c)
 		gpio_set(PIN_TX);
 
@@ -93,27 +88,19 @@ static void assert_ta(int inputs) {
 	gpio_set(PIN_TA);
 
 	/* handle state transitions for unwanted cases */
-	// TRANSFER_FORCE(0b00, cleanup_tx, 1);
-	while ((read_inputs()) == 0b001) {
-		continue;
-	}
-
-	cleanup_tx(inputs);
+	TRANSFER_FORCE(0b00, cleanup_tx, 1);
 }
 
 static void cleanup_tx(int inputs) {
 	/* clear the bit we just sent */
-	int i = BIT_BUFFER_INDX(current_bit);
-	int j = B2S_INDX(current_bit);
-
+	
 	// this clears out the bit we just sent from the buffer
 	// because it can lead to errors in character interpretation
 	// since we or the char with the buffer
-	(buffer[i % NBTS_MAX]) &= (~0 ^ (0b1 << j));
+	buffer[start / 8] &= (~0 ^ (0b1 << (start % 8)));
 
 	/* set up tx state bits for next enqueue */
-	bts--; 
-	current_bit = (current_bit + 1);
+	start = start + 1;
 	state = idle;
 
 	/* handle idle operations */
@@ -135,14 +122,14 @@ static void idle(int inputs) {
 void exec() {
 	int inputs = read_inputs();
 	state(inputs);
-	delay(1000000 >> 1);
+	delay(1000);
 }
 
 /* book-keeping */
 void init_gpc() {
 	/* set up the buffers */
-	bts = 0;
-	current_bit = 0;
+	start = 0;
+	end = 0;
 
 	INPUT_PINS[0] = PIN_RD;
 	INPUT_PINS[1] = PIN_ID;
@@ -169,28 +156,35 @@ void init_gpc() {
 	state = idle;
 }
 
-void putb(int b) {
-	int i = BIT_BUFFER_INDX(max_bit);
-	int j = B2S_INDX(max_bit);
-	buffer[i % NBTS_MAX] |= ((b & 0b1) << j);
-	max_bit++;
-	bts++;
+int putb(int b) {
+	if (end == NBTS_MAX * 8)
+		return -1;
+
+	buffer[end / 8] |= ((b & 0b1) << (end % 8));
+	end = end + 1;
+	return 0x0;
 }
 
-void putc(char c) {
+int putc(char c) {
 	for (unsigned int i = 0; i < 8; i++) {
-		putb((c & (0b1 << i)) >> i);
+		if (putb(((c >> i) & 0b1)) == -1)
+			return -1;
 	}
+	
+	return 0;
 }
 
-void printg(char *c) {
+int puts(char *c) {
 	for (; *c != '\0'; c++) {
-		putc(*c);
+		if (putc(*c) == -1)
+			return -1;
 	}
+
+	return 0;
 }
 
 int buffer_empty() {
-	return bts <= 0;
+	return (end - start) <= 0;
 }
 
 void buffer_flush() {
@@ -198,7 +192,6 @@ void buffer_flush() {
 		buffer[i] = 0;
 	}
 
-	bts = 0;
-	max_bit = 0;
-	current_bit = 0;
+	start = 0;
+	end = 0;
 }

@@ -17,9 +17,9 @@ extern void (*state)(int);
 void init_gpc();
 
 /* transmit related */
-void putb(int b);
-void putc(char c);
-void printg(char *c);
+int putb(int b);
+int putc(char c);
+int puts(char *c);
 
 /* testing our revised functions */
 int buffer_empty();
