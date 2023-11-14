@@ -6,23 +6,12 @@ void kernel_main() {
     /* initialize the gpio map */
     init_gpio_map();
     init_gpc();
-    
-    exec();
-    buffer_flush();
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");
-    printg("Hello!\n");   
-    printg("Hello!\n");
-    printg("Hello!\n");
 
-    while (1) {       
+    while (1) {
+        if (buffer_empty()) {
+            buffer_flush();
+            putc('a');
+        }
         exec();
     }
     

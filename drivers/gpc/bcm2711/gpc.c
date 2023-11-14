@@ -13,6 +13,12 @@ int bts = 0;
 int max_bit = 0;
 int current_bit = 0;
 
+static void delay(int cycles) {
+	for (volatile unsigned int j = 0; j < (cycles); j++) {
+		__asm__ volatile ("nop");
+	}
+}
+
 /**
  * @brief Will conditionally tranfer if the state is equal to the inputs.
  * 
@@ -109,6 +115,9 @@ static void cleanup_tx(int inputs) {
 	bts--; 
 	current_bit = (current_bit + 1);
 	state = idle;
+
+	/* handle idle operations */
+	gpio_clear(PIN_TA);
 }
 
 static void tx_incoming(int inputs) {
@@ -116,8 +125,6 @@ static void tx_incoming(int inputs) {
 }
 
 static void idle(int inputs) {
-	/* handle idle operations */
-	gpio_clear(PIN_TA);
 	gpio_set(PIN_IA);
 
 	/* handle state transfers */
@@ -128,6 +135,7 @@ static void idle(int inputs) {
 void exec() {
 	int inputs = read_inputs();
 	state(inputs);
+	delay(1000000 >> 1);
 }
 
 /* book-keeping */
@@ -162,9 +170,6 @@ void init_gpc() {
 }
 
 void putb(int b) {
-	if (max_bit > (NBTS_MAX * 8) - 1) {
-		return;
-	}
 	int i = BIT_BUFFER_INDX(max_bit);
 	int j = B2S_INDX(max_bit);
 	buffer[i % NBTS_MAX] |= ((b & 0b1) << j);
