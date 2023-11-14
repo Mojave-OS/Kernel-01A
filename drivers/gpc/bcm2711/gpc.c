@@ -3,11 +3,11 @@
 
 #define MIN_SAMPLE_COUNT 3
 #define NINPUT_PINS 2
-#define NBTS_MAX (1024 << 1)
 
-#define BIT_BUFFER_INDX(bts) (bts / 8)
-#define B2S_INDX(bts) (bts % 8)
+/* configuration related */
+#define NBTS_MAX (1024 << 1) // max chars buffer holds
 
+/* buffering realted */
 int buffer[NBTS_MAX];
 int start = 0, end = 0;
 
@@ -49,6 +49,14 @@ int INPUT_PINS[NINPUT_PINS];
 /* state handling */
 void (*state)(int);
 
+/**
+ * @brief Reads the inputs and provides the state
+ * of our state machine in an integer representation
+ * as such: RD | ID | buffer has bits to send; represented as 
+ * one or zero.
+ * 
+ * @return int state of the machine
+ */
 static int read_inputs(void)
 {
 	int reading = 0;
@@ -63,7 +71,8 @@ static int read_inputs(void)
 }
 
 /**
- * @brief Prepare a bit to be sent on the "wire".
+ * @brief Prepare a bit to be sent on the "wire", by setting / clearing
+ * the TX Pin.
  * 
  * @param inputs state from pins.
  */
@@ -84,6 +93,12 @@ static void enqueue_tx(int inputs) {
 	state = assert_ta;
 }
 
+/**
+ * @brief Asserts the TA Pin (i.e., sets it to 1). This is required
+ * for our state machine.
+ * 
+ * @param inputs 
+ */
 static void assert_ta(int inputs) {
 	gpio_set(PIN_TA);
 
@@ -91,6 +106,12 @@ static void assert_ta(int inputs) {
 	TRANSFER_FORCE(0b00, cleanup_tx, 1);
 }
 
+/**
+ * @brief Will clear the TX Buffer's last sent bit, and will
+ * increment the start bit. Also clears the TA Pin.
+ * 
+ * @param inputs 
+ */
 static void cleanup_tx(int inputs) {
 	/* clear the bit we just sent */
 	
@@ -107,10 +128,20 @@ static void cleanup_tx(int inputs) {
 	gpio_clear(PIN_TA);
 }
 
+/**
+ * @brief To be implemented.
+ * 
+ * @param inputs 
+ */
 static void tx_incoming(int inputs) {
 	state = idle;
 }
 
+/**
+ * @brief Default state for the state machine. 
+ * 
+ * @param inputs 
+ */
 static void idle(int inputs) {
 	gpio_set(PIN_IA);
 
@@ -119,6 +150,10 @@ static void idle(int inputs) {
 	TRANSFER(0b010, idle, 0);
 }
 
+/**
+ * @brief "Driver" function.
+ * 
+ */
 void exec() {
 	int inputs = read_inputs();
 	state(inputs);
@@ -156,6 +191,12 @@ void init_gpc() {
 	state = idle;
 }
 
+/**
+ * @brief Puts a bit in the buffer.
+ * 
+ * @param b 
+ * @return int 
+ */
 int putb(int b) {
 	if (end == NBTS_MAX * 8)
 		return -1;
@@ -165,6 +206,12 @@ int putb(int b) {
 	return 0x0;
 }
 
+/**
+ * @brief Puts a character in the buffer.
+ * 
+ * @param c 
+ * @return int 
+ */
 int putc(char c) {
 	for (unsigned int i = 0; i < 8; i++) {
 		if (putb(((c >> i) & 0b1)) == -1)
@@ -174,6 +221,12 @@ int putc(char c) {
 	return 0;
 }
 
+/**
+ * @brief Puts a string in the buffer.
+ * 
+ * @param c 
+ * @return int 
+ */
 int puts(char *c) {
 	for (; *c != '\0'; c++) {
 		if (putc(*c) == -1)
@@ -183,10 +236,19 @@ int puts(char *c) {
 	return 0;
 }
 
+/**
+ * @brief Checks if the buffer is empty.
+ * 
+ * @return int 
+ */
 int buffer_empty() {
 	return (end - start) <= 0;
 }
 
+/**
+ * @brief Flushes the buffer; effectively removing anything in it.
+ * 
+ */
 void buffer_flush() {
 	for (unsigned int i = 0; i < NBTS_MAX; i++) {
 		buffer[i] = 0;
