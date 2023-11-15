@@ -1,6 +1,13 @@
 #ifndef __DRIVERS_GPIO_H
 #define __DRIVERS_GPIO_H
 
+/**
+ * @brief This is a gpio driver for the BCM2711 Board. This is completely
+ * plug and play, and makes no assumptions about the development environment.
+ *
+ * @author Diego Alba, DAlba-sudo
+ */
+
 /* GPIO Func Values */
 #define GPIO_FUNC_OUT           0x1
 #define GPIO_FUNC_IN            0x0

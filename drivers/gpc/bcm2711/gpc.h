@@ -1,6 +1,16 @@
 #ifndef __DRIVERS_GPC_H
 #define __DRIVERS_GPC_H
 
+/**
+ * @brief This is a driver for Kernel-01A's custom communication protoool.
+ * For more information regarding the protocol, please check out the 
+ * github repo: https://github.com/Mojave-OS/gcp-term.
+ * 
+ * @author Diego Alba, DAlba-sudo
+ * @em Requires a working GPIO Driver.
+ * 
+ */
+
 #define BUFF_MAX_RECV   (100)
 #define BUFF_MAX_SEND   (100)
 #define PIN_TX          2
