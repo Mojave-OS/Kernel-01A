@@ -1,40 +1,20 @@
-#include "gpio.h"
-
-void delay(int seconds) {
-    for (unsigned int s = 0; s < seconds; s++) {
-        for (volatile unsigned int j = 0; j < (1000000); j++) {
-            __asm__ volatile ("nop");
-        }
-    }
-}
+#include "gpio/bcm2711/gpio.h"
+#include "gpc/bcm2711/gpc.h"
+#include "common.h"
 
 void kernel_main() {
-    unsigned int PIN_COUNT = 2;
-    unsigned int PINS[PIN_COUNT];
-    PINS[0] = 42;
-    PINS[1] = 21;
-    
     /* initialize the gpio map */
     init_gpio_map();
+    init_gpc();
+    
+    puts("Hello, welcome to the GPIO-Communication Protocol!\n");
+    puts("o7\n");
 
-    /* set the pins to not use any pull resistors */
-    for (unsigned int i = 0; i < PIN_COUNT; i++) {
-        gpio_pull(PINS[i], GPIO_PULLF);
-        gpio_func(PINS[i], GPIO_FUNC_OUT);
-    }
-
-    /* set and clear pins with delay */
     while (1) {
-        /* set the pins */
-        for (unsigned int i = 0; i < PIN_COUNT; i++) {
-            gpio_set(PINS[i]);
-        }
-        delay(1);
-        
-        /* set the pins */
-        for (unsigned int i = 0; i < PIN_COUNT; i++) {
-            gpio_clear(PINS[i]);
-        }
-        delay(1);
+        exec();
     }
+    
+
+    delay(4);
+    panic();
 }

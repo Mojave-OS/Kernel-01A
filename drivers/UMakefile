@@ -2,11 +2,12 @@
 # code that runs - so our makefile is simple (for now).
 DRIVER_SRCS=$(foreach driver, $(DRIVERS), $(wildcard $(DDRIVER)/$(driver)/$(BOARD)/*.c))
 GPIO_DRIVER_OBJS=$(patsubst $(DDRIVER)/gpio/$(BOARD)/%.c, $(BUILD_LOC)/%.o, $(DRIVER_SRCS))
+GPC_DRIVER_OBJS=$(patsubst $(DDRIVER)/gpc/$(BOARD)/%.c, $(BUILD_LOC)/%.o, $(DRIVER_SRCS))
 
-all: $(GPIO_DRIVER_OBJS) md5summary
+all: $(GPIO_DRIVER_OBJS) $(GPC_DRIVER_OBJS) md5summary
 
 $(DBUILD)/$(DKERN)/%.o: $(DDRIVER)/*/$(BOARD)/%.c
-	@$(CC) -c $(CCFLAGS) -o $@ $<
+	@$(CC) -c -I$(DDRIVER) $(CCFLAGS) -o $@ $<
 
 .PHONY: md5summary
 md5summary:

@@ -2,7 +2,7 @@
 # Configuration For Make
 #
 BOARD=bcm2711
-DRIVERS=gpio
+DRIVERS=gpio gpc
 
 #
 # Compiler Directives
@@ -56,6 +56,7 @@ export DBUILD
 export DDRIVER
 export DBOOT
 export DKERN
+export DRIVERS
 
 .PHONY: all
 all: drivers boot kernel
@@ -63,7 +64,7 @@ all: drivers boot kernel
 .PHONY: drivers boot kernel
 drivers:
 	@echo -e "$(CPRINT_YELLOW)Starting the driver build...$(CPRINT_END)"
-	-@$(MAKE) -f $(DDRIVER)/UMakefile DRIVERS=$(DRIVERS) BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
+	-@$(MAKE) -f $(DDRIVER)/UMakefile BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
 
 
 boot:
@@ -73,7 +74,7 @@ boot:
 KERN_OBJ_FILES := $(wildcard $(DBUILD)/$(DKERN)/*.o)
 kernel:
 	@echo -e "$(CPRINT_YELLOW)Starting the kernel build process...$(CPRINT_END)"
-	@$(MAKE) -f $(DKERN)/Makefile DRIVERS=$(DRIVERS) BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
+	@$(MAKE) -f $(DKERN)/Makefile BUILD_LOC=$(DBUILD)/$(DKERN) --no-print-directory
 
 	@$(LD) $(LDFLAGS) -T$(LINKF) $(KERN_OBJ_FILES) -o $(KERN_NAME).elf
 	@$(OBJCPY) -O binary $(KERN_NAME).elf $(KERN_NAME).img
@@ -84,3 +85,7 @@ clean:
 	-@ rm -rf $(DBUILD)/
 	-@ mkdir -p $(DBUILD)/$(DKERN)/
 
+.PHONY: transfer
+transfer:
+	@echo "Transferred Kernel"
+	-@cp $(KERN_NAME).img /run/media/diegoa/bootfs/
