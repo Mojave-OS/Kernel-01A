@@ -2,22 +2,22 @@
 #include "gpc/bcm2711/gpc.h"
 #include "common.h"
 #include "led/led.h"
+#include "strings/strings.h"
 
 void kernel_main() {
     /* initialize the gpio map */
     init_gpio_map();
     init_gpc();
 
-    led_init(21, 1);
-    led_init(20, 0);
-    led_init(16, 1);
+    char destination[32];
+    unsigned int args[1];
+    args[0] = 123456789;
+
+    sprintf(&destination[0], "\nCount: %d\n", (void *)(args));
+    puts(destination);
 
     while (1) {
-        led_toggle(21);
-        led_toggle(20);
-        led_toggle(16);
-
-        delay(1);
+        exec();
     }
 
     panic();
